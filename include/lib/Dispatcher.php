@@ -20,10 +20,10 @@ class Dispatcher {
 	function controllerFileExists ($controller_name) {
 		return ChitinFunctions::file_exists_in_include_path('controllers/' . $controller_name . '.php');
 	}
-	
+
 	/**
 	 * Fetch a URL for given coordinates
-	 * 
+	 *
 	 * Examples:
 	 * - UserAddController       => user/add
 	 * - AccountCreditcardAdd    => account/creditcard/add
@@ -33,7 +33,7 @@ class Dispatcher {
 	 * @return string Directory-style path
 	 */
 	function controllerToShort ($controller_name) {
-		
+
 		$path = preg_replace(
 			array(
 			'/Controller$/',
@@ -49,10 +49,10 @@ class Dispatcher {
 
 			$controller_name
 		);
-		
+
 		return strtolower($path);
 	}
-	
+
 	/**
 	 * Fetch coordinates for a URL
 	 *
@@ -66,7 +66,7 @@ class Dispatcher {
 		$controller_name .= 'Controller';
 		return $controller_name;
 	}
-	
+
 	/**
 	 * Sends an Apache-style '404' error message to the browser and exits
 	 *
@@ -74,13 +74,13 @@ class Dispatcher {
 	 */
 	function send404 () {
 		header("HTTP/1.0 404 Not Found");
-		
+
 		if (!isset($GLOBALS['config']['errordocument']['404']) || strlen($GLOBALS['config']['errordocument']['404']) < 1) $GLOBALS['config']['errordocument']['404'] = '404.php';
-		
+
 		$path = ($GLOBALS['config']['errordocument']['404'][0] == '/') ?
 			$_SERVER['DOCUMENT_ROOT'] . $GLOBALS['config']['errordocument']['404'] : // Absolute paths are from the DOCUMENT_ROOT
 			dirname(__FILE__) . '/../../' . $GLOBALS['config']['errordocument']['404']; // Relative paths are from include/'s parent
-		
+
 		if (file_exists($path)) {
 			ChitinLogger::log(__CLASS__ . '::' . __FUNCTION__ . ": Could not locate a matching route for URL, sending 404 document in '$path'");
 			include_once $path;
@@ -102,8 +102,8 @@ EOF;
 		}
 	ChitinLogger::flush();
 	die();
-	} 
-	
+	}
+
 }
 
 
@@ -115,11 +115,11 @@ EOF;
  * @subpackage Dispatcher
  */
 class ChitinRoute {
-	
+
 	var $rule; // tracked for logging purposes
 	var $compontents;
 	var $defaults;
-	
+
 	/**
 	 * @var string $rule URL like path to match against, e.g. ':controller/:action/:id'
 	 * @var array $defaults associative array of components that will default the ones pulled from $rule
@@ -148,7 +148,7 @@ class ChitinRoute {
 			}
 		}
 	}
-	
+
 	/**
 	 * Create a regexp that matches and captures each component of this route
 	 * in order.
@@ -158,7 +158,7 @@ class ChitinRoute {
 	 */
 	function _toRegex () {
 		$patterns = array();
-		
+
 		$i = count($this->components);
 		// While there are elements to process, and this is the first element *or* the trailing component is optional..
 		while ($i >= 0 && ($i == count($this->components) || isset($this->defaults[$this->components[$i]->name]))) {
@@ -191,8 +191,8 @@ class ChitinRoute {
 		// (?: ) is a "non-capturing" grouping
 		return "(?:^" . implode('\/', $patterns) . "$)";
 	}
-	
-	
+
+
 	/**
 	 * Determine if this particular route matches a given URL
 	 * @param string $url URL relative to the dispatcher
@@ -220,7 +220,7 @@ class ChitinRoute {
 
 		return $ret;
 	}
-	
+
 
 	/**
 	 * Determine if the given coordinate matches this rule
@@ -238,7 +238,7 @@ class ChitinRoute {
 		foreach ($coordinate as $name => $value)
 			if (!$this->hasComponent($name, $value) && (!isset($this->defaults[$name]) || $this->defaults[$name] != $value))
 				return false;
-				
+
 		foreach ($this->components as $c)
 			// Ensure the component was specified in the coordinate
 			if ($c->dynamic) {
@@ -248,11 +248,11 @@ class ChitinRoute {
 					$url[] = $coordinate[$c->name];
 			} else
 				$url[] = $c->regex;
-		
+
 
 		return join('/', $url);
 	}
-	
+
 	/**
 	 * Determine if this route contains a component $name, and if the provide
 	 * value matches the regex
@@ -293,7 +293,7 @@ class ChitinRouteComponent {
 			// By default Controllers will be greedy, allowing URLs like admin/user/index for AdminUserController::index()
 			(($name == 'controller') ? '.+' : '.+?'));
 		$this->dynamic = $dynamic;
-		
+
 	}
 }
 
