@@ -6,12 +6,10 @@
  * - models/, if class name contains 'Model'
  * - lib/
  *
- * @version $Id: __autoload.php 686 2008-01-16 16:06:04Z gabebug $
- * @copyright Mudbug Media, 2007-08-07
- * @package Chitin
- * @link http://php.net/__autoload
+ * Updated 2015-07-18 to use spl_autoload_register()
+ *
  */
-function __autoload ($class_name) {
+function autoload_lib ($class_name) {
 	$include_path = dirname(dirname(__FILE__));
 	if (strpos($class_name, 'Model') !== false && file_exists($include_path . '/models/' . $class_name . '.php')) {
 		require_once $include_path . '/models/' . $class_name . '.php';
@@ -19,5 +17,7 @@ function __autoload ($class_name) {
 		require_once $include_path . '/lib/' . $class_name . '.php';
 	}
 }
+
+spl_autoload_register('autoload_lib');
 
 ?>

@@ -14,6 +14,7 @@
  * @version   $Id: routes.php 1688 2008-06-22 23:28:16Z seanbug $
  */
 
+include_once 'vendor/Aura.Router-2.3.0/autoload.php';
 include_once 'lib/Dispatcher.php';
 
 if (!isset($routes)) {
