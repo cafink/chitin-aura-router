@@ -7,20 +7,20 @@
  * will be passed to the controller's action.  All loaded plugins will have
  * their routing rules automatically merged with the ones listed below.
  *
- * @author    Gabe Martin-Dempesy <gabe@mudbugmedia.com>
- * @copyright Copyright &copy; 2007 Mudbug Media
- * @package   Chitin
- * @subpackage Dispatcher
- * @version   $Id: routes.php 1688 2008-06-22 23:28:16Z seanbug $
+ * Updated 2015-07-18 to use Aura Router
+ *
  */
 
 include_once 'vendor/Aura.Router-2.3.0/autoload.php';
 include_once 'lib/Dispatcher.php';
 
-if (!isset($routes)) {
-	$routes = array();
-}
-$routes[] = new ChitinRoute(':controller/:action/:id', array(), array('action' => 'edit|delete|view', 'id' => '\d+'));
-$routes[] = new ChitinRoute(':controller/:action', array('action' => 'index'));
+use Aura\Router\RouterFactory;
+
+$router_factory = new RouterFactory;
+$router = $router_factory->newInstance();
+
+$router->add(null, '/{controller}/{action}/{id}')->addTokens(array('action' => 'edit|delete|view|feed', 'id' => '\d+'));
+$router->add(null, '/{controller}/{action}');
+$router->add(null, '/{controller}')->addValues(array('action' => 'index'));
 
 ?>

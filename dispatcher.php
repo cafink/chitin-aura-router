@@ -22,53 +22,56 @@ include_once 'include/controllers/ApplicationController.php';
 define('PATH_TO_DISPATCH_ROOT', dirname($_SERVER['SCRIPT_NAME']));
 
 // This GET variable is passed by mod_rewrite
-$path = $_GET['dispatch_original_path'];
+$path = '/' . $_GET['dispatch_original_path'];
 
 ChitinLogger::log(date('c') . ' ' .  $_GET['dispatch_original_path']);
-foreach ($routes as $route) {
-	if (($coordinates = $route->matchUrl($path)) !== false) {
-		$controller_name = preg_replace('/[^A-Za-z0-9-_]/', '', Dispatcher::shortToController($coordinates['controller']));
 
-		/*
-		 * Attempt to include the controller
-		 */
-		// Check that a file for the controller exists
-		if (!Dispatcher::controllerFileExists($controller_name))
-			continue;
+// Get the route based on the path and server
+$route = $router->match($path, $_SERVER);
+
+if($route) {
+
+	$controller_name = preg_replace('/[^A-Za-z0-9-_]/', '', Dispatcher::shortToController($route->params['controller']));
+
+	/*
+	 * Attempt to include the controller
+	 */
+	// Check that a file for the controller exists
+	if (Dispatcher::controllerFileExists($controller_name)) {
 
 		include_once 'controllers/' . $controller_name . '.php';
-		
+
 		// Check that class was properly declared in the file
-		if (!class_exists($controller_name))
-			continue;
-			
-		/*
-		 * Instantiate the controller and call the action method
-		 */
-		$controller = new $controller_name();
+		if (class_exists($controller_name)) {
 
-		// Check that the action exists
-		if (!method_exists($controller, $coordinates['action']))
-			continue;
+			/*
+			 * Instantiate the controller and call the action method
+			 */
+			$controller = new $controller_name();
 
-		ChitinLogger::log("Route: " . $route->rule);
-		ChitinLogger::log("Coordinates: " . var_export($coordinates, true));
-		
-		// Run the controller and fetch the page
-		$controller->start($coordinates);
-		$page = $controller->getPage();
-		
-		ChitinLogger::flush();
-		/*
-		 * Fetch the $page variable and include the layout
-		 */
-		if (isset($page['layout']) && $page['layout'] === false)
-			echo $page['content'];
-		else if (isset($page['layout']) && isset($config['layouts'][$page['layout']]))
-			include $config['layouts'][$page['layout']];
-		else
-			include $config['layouts']['normal'];
-		exit(0);
+			// Check that the action exists
+			if (method_exists($controller, $route->params['action'])) {
+
+				ChitinLogger::log("Route: " . $route->path);
+				ChitinLogger::log("Coordinates: " . var_export($route->params, true));
+
+				// Run the controller and fetch the page
+				$controller->start($route->params);
+				$page = $controller->getPage();
+
+				ChitinLogger::flush();
+				/*
+				 * Fetch the $page variable and include the layout
+				 */
+				if (isset($page['layout']) && $page['layout'] === false)
+					echo $page['content'];
+				else if (isset($page['layout']) && isset($config['layouts'][$page['layout']]))
+					include $config['layouts'][$page['layout']];
+				else
+					include $config['layouts']['normal'];
+				exit(0);
+			}
+		}
 	}
 }
 
